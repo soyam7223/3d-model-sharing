@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  bio           String?
+  website       String?
+  role          String    @default("USER")
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  models        Model[]
+  comments      Comment[]
+  likes         Like[]
+  followers     Follow[]  @relation("UserFollowers")
+  following     Follow[]  @relation("UserFollowing")
+  earnings      Earning[]
+  views         ModelView[]
+
+  @@map("users")
+}
+
+model Model {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  tags        String
+  fileUrl     String
+  previewUrl  String?
+  thumbnailUrl String?
+  fileSize    Int
+  fileType    String
+  isPublic    Boolean     @default(true)
+  isFree      Boolean     @default(true)
+  price       Float?
+  downloadCount Int        @default(0)
+  viewCount   Int         @default(0)
+  likeCount   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  likes       Like[]
+  views       ModelView[]
+  downloads   Download[]
+
+  @@map("models")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelId   String
+  model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  modelId   String
+  model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, modelId])
+  @@map("likes")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  // Relations
+  followerId  String
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model ModelView {
+  id        String   @id @default(cuid())
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  modelId   String
+  model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("model_views")
+}
+
+model Download {
+  id        String   @id @default(cuid())
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    String?
+  modelId   String
+  model     Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("downloads")
+}
+
+model Earning {
+  id        String   @id @default(cuid())
+  amount    Float
+  type      String
+  status    String @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("earnings")
+}
+
+
