@@ -14,10 +14,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm ci && node ./node_modules/vite/bin/vite.js build",
+    "preview": "cd frontend && npm run preview",
+    "test": "echo 'no root tests'"
   },
   "eslintConfig": {
     "extends": [
